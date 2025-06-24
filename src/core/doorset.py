@@ -43,7 +43,10 @@ def sheet_from_cut_out(cut_out: Dim2 | None, thickness: float, /) -> Dim2 | None
     if cut_out is None:
         return None
     for sheet_size in metal_sheet_sizes[thickness]:
-        if cut_out[0] + CUTOUT_INSET * 2 <= sheet_size[0] and cut_out[1] + CUTOUT_INSET * 2 <= sheet_size[1]:
+        if (
+            cut_out[0] + CUTOUT_INSET * 2 <= sheet_size[0]
+            and cut_out[1] + CUTOUT_INSET * 2 <= sheet_size[1]
+        ):
             return sheet_size
     else:
         raise ValueError(
