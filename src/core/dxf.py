@@ -4,7 +4,7 @@ from typing import TYPE_CHECKING
 
 import ezdxf as dxflib
 
-from src.core.doorset import sheet_from_cut_out
+from src.core.bom import sheet_from_cut_out
 from src.resources.constants import CUTOUT_INSET, Colour
 
 if TYPE_CHECKING:
@@ -95,39 +95,17 @@ def hinges(door: DoorSet, msp: Modelspace, /) -> None:
 
 def draw_dxfs(door: DoorSet, /) -> None:
     struct = {
-        "front_active": {
-            "cutout": door.active_leaf_front_cutout,
-            "sheet": sheet_from_cut_out(
-                door.active_leaf_front_cutout, door.leaf_thickness
-            ),
-            "rules": DXFRuleManager.front_active_rules,
-        },
-        "rear_active": {
-            "cutout": door.active_leaf_rear_cutout,
-            "sheet": sheet_from_cut_out(
-                door.active_leaf_rear_cutout, door.leaf_thickness
-            ),
-            "rules": DXFRuleManager.rear_active_rules,
-        },
-        "front_passive": {
-            "cutout": door.passive_leaf_front_cutout,
-            "sheet": sheet_from_cut_out(
-                door.passive_leaf_front_cutout, door.leaf_thickness
-            ),
-            "rules": DXFRuleManager.front_passive_rules,
-        },
-        "rear_passive": {
-            "cutout": door.passive_leaf_rear_cutout,
-            "sheet": sheet_from_cut_out(
-                door.passive_leaf_rear_cutout, door.leaf_thickness
-            ),
-            "rules": DXFRuleManager.rear_passive_rules,
-        },
+        name: {
+            "cutout": getattr(door, f"{name}_leaf_cutout"),
+            "thickness": door.leaf_thickness,
+            "rules": getattr(DXFRuleManager, f"{name}_rules"),
+        }
+        for name in ("front_active", "rear_active", "front_passive", "rear_passive")
     }
 
     for name, guide in struct.items():
         cutout = guide["cutout"]
-        sheet = guide["sheet"]
+        sheet = sheet_from_cut_out(cutout, guide["thickness"])
         rules = guide["rules"]
 
         if cutout is None or sheet is None:
