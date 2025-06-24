@@ -2,10 +2,10 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..resources.constants import Colour
+from src.resources.constants import Colour
 
 if TYPE_CHECKING:
-    from ..resources.types import Dim2, Modelspace
+    from src.resources.types import Dim2, Modelspace
 
 
 def draw_rectangle(

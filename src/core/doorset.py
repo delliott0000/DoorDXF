@@ -5,14 +5,14 @@ from typing import TYPE_CHECKING
 
 import ezdxf as dxflib
 
-from ..core.dxf import DXFRuleManager
-from ..core.dxf_utils import draw_rectangle
-from ..resources.constants import Colour
+from src.core.dxf import DXFRuleManager
+from src.core.dxf_utils import draw_rectangle
+from src.resources.constants import Colour
 
 if TYPE_CHECKING:
     from typing import Any
 
-    from ..resources.types import Dim2, DXFRule
+    from src.resources.types import Dim2, DXFRule
 
 
 metal_sheet_sizes: dict[float, tuple[Dim2, ...]] = {
@@ -191,7 +191,7 @@ class DoorSet:
             return
 
     @property
-    def get_dxf_rules(self) -> dict[str, dict[str, list[DXFRule]]]:
+    def get_dxf_rules(self) -> dict[str, dict[str, list[DXFRule] | Dim2]]:
         return {
             "front_active": {
                 "cutout": self.active_leaf_front_cutout,
@@ -236,9 +236,9 @@ class DoorSet:
             msp = document.modelspace()
 
             # Sheet Edges (for reference; to be ignored when cutting)
-            draw_rectangle(msp, (0, 0), *sheet, color=Colour.RED)
+            draw_rectangle(msp, (0, 0), *sheet, color=Colour.RED)  # type: ignore
             # Cutout edges
-            draw_rectangle(msp, (10, 10), *cutout)
+            draw_rectangle(msp, (10, 10), *cutout)  # type: ignore
 
             for rule in rules:
                 rule(self, msp)

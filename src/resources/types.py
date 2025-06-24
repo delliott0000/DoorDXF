@@ -7,7 +7,7 @@ if TYPE_CHECKING:
 
     from ezdxf.layouts import Modelspace
 
-    from ..core.doorset import DoorSet
+    from src.core.doorset import DoorSet
 
     Dim2 = tuple[float, float]
     DXFRule = Callable[[DoorSet, Modelspace], None]

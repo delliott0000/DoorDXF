@@ -2,12 +2,11 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from ..core.dxf_utils import draw_rectangle
+from src.core.dxf_utils import draw_rectangle
 
 if TYPE_CHECKING:
-    from types import DXFRule, Modelspace
-
-    from ..core.doorset import DoorSet
+    from src.core.doorset import DoorSet
+    from src.resources.types import DXFRule, Modelspace
 
 
 class DXFRuleManager:
@@ -29,7 +28,7 @@ class DXFRuleManager:
         cls.front_passive_rules.append(func)
 
     @classmethod
-    def rear_active(cls, func: DXFRule, /):
+    def rear_passive(cls, func: DXFRule, /):
         cls.rear_passive_rules.append(func)
 
 
