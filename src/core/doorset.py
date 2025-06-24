@@ -3,16 +3,12 @@ from __future__ import annotations
 from enum import Enum
 from typing import TYPE_CHECKING
 
-import ezdxf as dxflib
-
-from src.core.dxf import DXFRuleManager
-from src.core.dxf_utils import draw_rectangle
-from src.resources.constants import CUTOUT_INSET, Colour
+from src.resources.constants import CUTOUT_INSET
 
 if TYPE_CHECKING:
     from typing import Any
 
-    from src.resources.types import Dim2, DXFRule
+    from src.resources.types import Dim2
 
 
 metal_sheet_sizes: dict[float, tuple[Dim2, ...]] = {
@@ -192,58 +188,3 @@ class DoorSet:
             return self.passive_leaf_x + 59, self.passive_leaf_y
         except TypeError:
             return
-
-    @property
-    def get_dxf_rules(self) -> dict[str, dict[str, list[DXFRule] | Dim2]]:
-        return {
-            "front_active": {
-                "cutout": self.active_leaf_front_cutout,
-                "sheet": sheet_from_cut_out(
-                    self.active_leaf_front_cutout, self.leaf_thickness
-                ),
-                "rules": DXFRuleManager.front_active_rules,
-            },
-            "rear_active": {
-                "cutout": self.active_leaf_rear_cutout,
-                "sheet": sheet_from_cut_out(
-                    self.active_leaf_rear_cutout, self.leaf_thickness
-                ),
-                "rules": DXFRuleManager.rear_active_rules,
-            },
-            "front_passive": {
-                "cutout": self.passive_leaf_front_cutout,
-                "sheet": sheet_from_cut_out(
-                    self.passive_leaf_front_cutout, self.leaf_thickness
-                ),
-                "rules": DXFRuleManager.front_passive_rules,
-            },
-            "rear_passive": {
-                "cutout": self.passive_leaf_rear_cutout,
-                "sheet": sheet_from_cut_out(
-                    self.passive_leaf_rear_cutout, self.leaf_thickness
-                ),
-                "rules": DXFRuleManager.rear_passive_rules,
-            },
-        }
-
-    def draw_dxfs(self) -> None:
-        for name, guide in self.get_dxf_rules.items():
-            cutout = guide["cutout"]
-            sheet = guide["sheet"]
-            rules = guide["rules"]
-
-            if cutout is None or sheet is None:
-                continue
-
-            document = dxflib.new("R2010")
-            msp = document.modelspace()
-
-            # Sheet Edges (for reference; to be ignored when cutting)
-            draw_rectangle(msp, (0, 0), *sheet, color=Colour.RED)  # type: ignore
-            # Cutout edges
-            draw_rectangle(msp, (CUTOUT_INSET, CUTOUT_INSET), *cutout)  # type: ignore
-
-            for rule in rules:
-                rule(self, msp)
-
-            document.saveas(f"output/{name}.dxf")

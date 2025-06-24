@@ -2,12 +2,38 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from src.core.dxf_utils import draw_rectangle
-from src.resources.constants import CUTOUT_INSET
+import ezdxf as dxflib
+
+from src.core.doorset import sheet_from_cut_out
+from src.resources.constants import CUTOUT_INSET, Colour
 
 if TYPE_CHECKING:
     from src.core.doorset import DoorSet
-    from src.resources.types import DXFRule, Modelspace
+    from src.resources.types import Dim2, DXFRule, Modelspace
+
+
+# # # # # # # # # #
+# HELPER FUNCTIONS
+# # # # # # # # # #
+
+
+def draw_rectangle(
+    msp: Modelspace, origin: Dim2, w: float, h: float, /, *, color: int = Colour.PLAIN
+) -> None:
+    msp.add_lwpolyline(
+        (
+            origin,
+            (origin[0] + w, origin[1]),
+            (origin[0] + w, origin[1] + h),
+            (origin[0], origin[1] + h),
+        ),
+        close=True,
+    ).dxf.color = color
+
+
+# # # # # # # # # #
+# DXF RULE TRACKER
+# # # # # # # # # #
 
 
 class DXFRuleManager:
@@ -37,6 +63,11 @@ class DXFRuleManager:
         return func
 
 
+# # # # # # # # # #
+# DXF RULES
+# # # # # # # # # #
+
+
 @DXFRuleManager.front_active
 def hinges(door: DoorSet, msp: Modelspace, /) -> None:
     w, h = 30, 80
@@ -55,3 +86,62 @@ def hinges(door: DoorSet, msp: Modelspace, /) -> None:
     draw_rectangle(
         msp, (CUTOUT_INSET + inset_x, CUTOUT_INSET + (door.active_leaf_y - h) / 2), w, h
     )
+
+
+# # # # # # # # # #
+# DRAW DXFS
+# # # # # # # # # #
+
+
+def draw_dxfs(door: DoorSet, /) -> None:
+    struct = {
+        "front_active": {
+            "cutout": door.active_leaf_front_cutout,
+            "sheet": sheet_from_cut_out(
+                door.active_leaf_front_cutout, door.leaf_thickness
+            ),
+            "rules": DXFRuleManager.front_active_rules,
+        },
+        "rear_active": {
+            "cutout": door.active_leaf_rear_cutout,
+            "sheet": sheet_from_cut_out(
+                door.active_leaf_rear_cutout, door.leaf_thickness
+            ),
+            "rules": DXFRuleManager.rear_active_rules,
+        },
+        "front_passive": {
+            "cutout": door.passive_leaf_front_cutout,
+            "sheet": sheet_from_cut_out(
+                door.passive_leaf_front_cutout, door.leaf_thickness
+            ),
+            "rules": DXFRuleManager.front_passive_rules,
+        },
+        "rear_passive": {
+            "cutout": door.passive_leaf_rear_cutout,
+            "sheet": sheet_from_cut_out(
+                door.passive_leaf_rear_cutout, door.leaf_thickness
+            ),
+            "rules": DXFRuleManager.rear_passive_rules,
+        },
+    }
+
+    for name, guide in struct.items():
+        cutout = guide["cutout"]
+        sheet = guide["sheet"]
+        rules = guide["rules"]
+
+        if cutout is None or sheet is None:
+            continue
+
+        document = dxflib.new("R2010")
+        msp = document.modelspace()
+
+        # Sheet Edges (for reference; to be ignored when cutting)
+        draw_rectangle(msp, (0, 0), *sheet, color=Colour.RED)  # type: ignore
+        # Cutout edges
+        draw_rectangle(msp, (CUTOUT_INSET, CUTOUT_INSET), *cutout)  # type: ignore
+
+        for rule in rules:
+            rule(door, msp)
+
+        document.saveas(f"output/{name}.dxf")
