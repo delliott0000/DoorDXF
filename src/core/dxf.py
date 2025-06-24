@@ -17,20 +17,24 @@ class DXFRuleManager:
     rear_passive_rules: list[DXFRule] = []
 
     @classmethod
-    def front_active(cls, func: DXFRule, /):
+    def front_active(cls, func: DXFRule, /) -> DXFRule:
         cls.front_active_rules.append(func)
+        return func
 
     @classmethod
-    def rear_active(cls, func: DXFRule, /):
+    def rear_active(cls, func: DXFRule, /) -> DXFRule:
         cls.rear_active_rules.append(func)
+        return func
 
     @classmethod
-    def front_passive(cls, func: DXFRule, /):
+    def front_passive(cls, func: DXFRule, /) -> DXFRule:
         cls.front_passive_rules.append(func)
+        return func
 
     @classmethod
-    def rear_passive(cls, func: DXFRule, /):
+    def rear_passive(cls, func: DXFRule, /) -> DXFRule:
         cls.rear_passive_rules.append(func)
+        return func
 
 
 @DXFRuleManager.front_active
