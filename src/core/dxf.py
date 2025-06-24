@@ -3,6 +3,7 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from src.core.dxf_utils import draw_rectangle
+from src.resources.constants import CUTOUT_INSET
 
 if TYPE_CHECKING:
     from src.core.doorset import DoorSet
@@ -38,8 +39,15 @@ def hinges(door: DoorSet, msp: Modelspace, /) -> None:
     inset_x, inset_y = 40, 100
 
     # Top
-    draw_rectangle(msp, (10 + inset_x, 10 + inset_y), w, h)
+    draw_rectangle(msp, (CUTOUT_INSET + inset_x, CUTOUT_INSET + inset_y), w, h)
     # Bottom
-    draw_rectangle(msp, (10 + inset_x, 10 + door.active_leaf_y - inset_y - h), w, h)
+    draw_rectangle(
+        msp,
+        (CUTOUT_INSET + inset_x, CUTOUT_INSET + door.active_leaf_y - inset_y - h),
+        w,
+        h,
+    )
     # Centre
-    draw_rectangle(msp, (10 + inset_x, 10 + (door.active_leaf_y - h) / 2), w, h)
+    draw_rectangle(
+        msp, (CUTOUT_INSET + inset_x, CUTOUT_INSET + (door.active_leaf_y - h) / 2), w, h
+    )

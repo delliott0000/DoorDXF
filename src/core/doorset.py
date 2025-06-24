@@ -7,7 +7,7 @@ import ezdxf as dxflib
 
 from src.core.dxf import DXFRuleManager
 from src.core.dxf_utils import draw_rectangle
-from src.resources.constants import Colour
+from src.resources.constants import CUTOUT_INSET, Colour
 
 if TYPE_CHECKING:
     from typing import Any
@@ -43,7 +43,7 @@ def sheet_from_cut_out(cut_out: Dim2 | None, thickness: float, /) -> Dim2 | None
     if cut_out is None:
         return None
     for sheet_size in metal_sheet_sizes[thickness]:
-        if cut_out[0] + 20 <= sheet_size[0] and cut_out[1] + 20 <= sheet_size[1]:
+        if cut_out[0] + CUTOUT_INSET * 2 <= sheet_size[0] and cut_out[1] + CUTOUT_INSET * 2 <= sheet_size[1]:
             return sheet_size
     else:
         raise ValueError(
@@ -238,7 +238,7 @@ class DoorSet:
             # Sheet Edges (for reference; to be ignored when cutting)
             draw_rectangle(msp, (0, 0), *sheet, color=Colour.RED)  # type: ignore
             # Cutout edges
-            draw_rectangle(msp, (10, 10), *cutout)  # type: ignore
+            draw_rectangle(msp, (CUTOUT_INSET, CUTOUT_INSET), *cutout)  # type: ignore
 
             for rule in rules:
                 rule(self, msp)
